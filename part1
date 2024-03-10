@@ -1,0 +1,129 @@
+import csv
+import requests #The only module I know that can download.
+csv_url = 'https://raw.githubusercontent.com/several27/FakeNewsCorpus/master/news_sample.csv'
+
+def download_csv(): #Downloads the csv to the folder its run from
+    x = requests.get(csv_url)
+    with open('news_sample.csv', 'wb') as f:
+        f.write(x.content)
+download_csv()
+   
+def get_data(): #Turns the csv into a list that can be interacted with
+    list = []
+    with open('.//news_sample.csv', newline='', encoding='utf-8') as line:
+        for i in csv.DictReader(line):
+            list.append(i)
+    return list
+
+list_init = get_data()
+
+def list_str(): #Extracts only the contents from each line in the csv
+    l = []
+    for i in list_init:
+        a = i['content']
+        l.append(a)
+    return l
+
+list_string = list_str()
+
+from cleantext import clean
+cleaner_text = clean(list_string, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
+        fix_unicode=True,               # fix various unicode errors
+        to_ascii=True,                  # transliterate to closest ASCII representation
+        lower=True,                     # lowercase text
+        no_line_breaks=False,           # fully strip line breaks as opposed to only normalizing them
+        no_urls=True,                  # replace all URLs with a special token
+        no_emails=True,                # replace all email addresses with a special token
+        no_phone_numbers=False,         # replace all phone numbers with a special token
+        no_numbers=True,               # replace all numbers with a special token
+        no_digits=False,                # replace all digits with a special token
+        no_currency_symbols=False,      # replace all currency symbols with a special token
+        no_punct=False,                 # remove punctuations
+        replace_with_punct="",          # instead of removing punctuations you may replace them
+        replace_with_url="<URL>",
+        replace_with_email="<EMAIL>",
+        replace_with_phone_number="<PHONE>",
+        replace_with_number="<NUMBER>",
+        replace_with_digit="0",
+        replace_with_currency_symbol="<CUR>",
+        lang="en"                       # set to 'de' for German special handling
+    )
+
+def types(): #Wrote to extract types to see what should be included.
+    with open('news_sample.csv', 'r', newline='', encoding='utf-8') as file:
+        type_list = set()
+        for i in csv.DictReader(file):
+            type_list.add(i['type'])
+    return list(type_list)
+type_list = types() #['fake', '', 'unreliable', 'hate', 'political', 'conspiracy', 'bias', 'unknown', 'junksci', 'reliable', 'clickbait']
+#I've chosen to exclude based on these types. After investigating, I've chosen to exclude the content types of 
+# A: 'bias', as it is not actually fake or not fake, from what I can tell, but instead expressions of opinions. 
+# While there is certainly room for disagreement with opinions, to say an opinion is wrong or right seems a more sophisticated burden than a text-scraper can be burdeneded with, 
+# especially considering the obviously political nature of the bias content.
+# B: 'hate', much for the same reasoning as bias, it's not really fake or not fake. They're expressing strong negative opinions, and while those opinions can be disagreed with, 
+# that doesn't make them 'fake', so to say.
+# and C: 'unknown', as these articles seem to be works of uncertain verifiability, such as the 'Understanding what authentic happiness is', 
+# which seems more a philosophical tirade than a news article.
+# I did consider including 'political' as well, considering that they are obviously expressing their own beliefs, much like the 'bias' type, but they are ultimately using data to do so.
+# As such, I'd rather mark it as fake or fact based on the information they express in the article, rather than the conclusions they draw from that information. 
+# It does seem to be overwhelmingly using accurate information, even if the conclusions they want the reader to draw may not be as unassailable.
+
+def list_str_clear(): #Extracts only the contents from each line in the csv, which does not contain one of the excluded types.
+    l = []
+    for i in list_init:
+        if (i['type'] != 'bias') and (i['type'] != 'hate') and (i['type'] != 'unknown'):
+            a = i['content']
+            b =     clean(a, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
+                        fix_unicode=True,               # fix various unicode errors
+                        to_ascii=True,                  # transliterate to closest ASCII representation
+                        lower=True,                     # lowercase text
+                        no_line_breaks=False,           # fully strip line breaks as opposed to only normalizing them
+                        no_urls=True,                  # replace all URLs with a special token
+                        no_emails=True,                # replace all email addresses with a special token
+                        no_phone_numbers=False,         # replace all phone numbers with a special token
+                        no_numbers=True,               # replace all numbers with a special token
+                        no_digits=False,                # replace all digits with a special token
+                        no_currency_symbols=False,      # replace all currency symbols with a special token
+                        no_punct=False,                 # remove punctuations
+                        replace_with_punct="",          # instead of removing punctuations you may replace them
+                        replace_with_url="<URL>",
+                        replace_with_email="<EMAIL>",
+                        replace_with_phone_number="<PHONE>",
+                        replace_with_number="<NUMBER>",
+                        replace_with_digit="0",
+                        replace_with_currency_symbol="<CUR>",
+                        lang="en"                       # set to 'de' for German special handling
+                    )
+            i['content'] = b
+            l.append(i)
+    return l
+clr_list_string = list_str_clear()
+
+
+#Extracts only the political and reliable typings of articles. 
+#This is due to the fact that ['fake', 'unreliable', 'conspiracy', 'junksci', 'clickbait'] all contain inaccurate or unverifiable information, 
+#whereas the political and reliable typings all have accurate facts, even if the manner in which they present that fact is biased in the case of political.
+def fake_or_reliable():
+    x = list_init
+    for i in x:
+        if (i["type"] == "political") or (i["type"] == "reliable"):
+            i["type"] = "reliable"
+        else:
+            i["type"] = "fake"
+    return x
+
+def type_check():
+    x = fake_or_reliable()
+    count = {}
+    for i in x:
+        j = i.get("type") 
+        if j:
+            if j in count:
+                count[j] += 1
+            else:
+                count[j] = 1
+    return count
+
+print(type_check()) # {'fake': 224, 'reliable': 26} e.g. 89.6% fake.
+# A major issue with this is that, with the data so heavily skewed towards fake, it implies a bias in the data collection proccess.
+# Additionally, it may imply a 'lazy' detector; e.g. that the method for determing fake news is not very refined.
