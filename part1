@@ -17,17 +17,7 @@ def get_data(): #Turns the csv into a list that can be interacted with
 
 list_init = get_data()
 
-def list_str(): #Extracts only the contents from each line in the csv
-    l = []
-    for i in list_init:
-        a = i['content']
-        l.append(a)
-    return l
-
-list_string = list_str()
-
 from cleantext import clean
-
 def types(): #Wrote to extract types to see what should be included.
     with open('news_sample.csv', 'r', newline='', encoding='utf-8') as file:
         type_list = set()
