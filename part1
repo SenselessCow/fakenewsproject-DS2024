@@ -1,5 +1,15 @@
+import nltk
 import csv
 import requests #The only module I know that can download.
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+from cleantext import clean
+nltk.download('punkt')
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
+ps = PorterStemmer()
+
 csv_url = 'https://raw.githubusercontent.com/several27/FakeNewsCorpus/master/news_sample.csv'
 
 def download_csv(): #Downloads the csv to the folder its run from
@@ -17,7 +27,6 @@ def get_data(): #Turns the csv into a list that can be interacted with
 
 list_init = get_data()
 
-from cleantext import clean
 def types(): #Wrote to extract types to see what should be included.
     with open('news_sample.csv', 'r', newline='', encoding='utf-8') as file:
         type_list = set()
@@ -37,37 +46,40 @@ type_list = types() #['fake', '', 'unreliable', 'hate', 'political', 'conspiracy
 # As such, I'd rather mark it as fake or fact based on the information they express in the article, rather than the conclusions they draw from that information. 
 # It does seem to be overwhelmingly using accurate information, even if the conclusions they want the reader to draw may not be as unassailable.
 
+
 def list_str_clear(): #Extracts only the contents from each line in the csv, which does not contain one of the excluded types.
     l = []
     for i in list_init:
-        if (i['type'] != 'bias') and (i['type'] != 'hate') and (i['type'] != 'unknown'):
-            a = i['content']
-            b =     clean(a, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
-                        fix_unicode=True,               # fix various unicode errors
-                        to_ascii=True,                  # transliterate to closest ASCII representation
-                        lower=True,                     # lowercase text
-                        no_line_breaks=False,           # fully strip line breaks as opposed to only normalizing them
-                        no_urls=True,                  # replace all URLs with a special token
-                        no_emails=True,                # replace all email addresses with a special token
-                        no_phone_numbers=False,         # replace all phone numbers with a special token
-                        no_numbers=True,               # replace all numbers with a special token
-                        no_digits=False,                # replace all digits with a special token
-                        no_currency_symbols=False,      # replace all currency symbols with a special token
-                        no_punct=False,                 # remove punctuations
-                        replace_with_punct="",          # instead of removing punctuations you may replace them
-                        replace_with_url="<URL>",
-                        replace_with_email="<EMAIL>",
-                        replace_with_phone_number="<PHONE>",
-                        replace_with_number="<NUMBER>",
-                        replace_with_digit="0",
-                        replace_with_currency_symbol="<CUR>",
-                        lang="en"                       # set to 'de' for German special handling
-                    )
-            i['content'] = b
-            l.append(i)
+        a = i['content']
+        b = clean(a, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
+                fix_unicode=True,               # fix various unicode errors
+                to_ascii=True,                  # transliterate to closest ASCII representation
+                lower=True,                     # lowercase text
+                no_line_breaks=False,           # fully strip line breaks as opposed to only normalizing them
+                no_urls=True,                  # replace all URLs with a special token
+                no_emails=True,                # replace all email addresses with a special token
+                no_phone_numbers=False,         # replace all phone numbers with a special token
+                no_numbers=True,               # replace all numbers with a special token
+                no_digits=False,                # replace all digits with a special token
+                no_currency_symbols=False,      # replace all currency symbols with a special token
+                no_punct=False,                 # remove punctuations
+                replace_with_punct="",          # instead of removing punctuations you may replace them
+                replace_with_url="<URL>",
+                replace_with_email="<EMAIL>",
+                replace_with_phone_number="<PHONE>",
+                replace_with_number="<NUMBER>",
+                replace_with_digit="0",
+                replace_with_currency_symbol="<CUR>",
+                lang="en"                       # set to 'de' for German special handling
+            )
+        c = word_tokenize(b)
+        d = [w for w in c if not w.lower() in stop_words]
+        e = [ps.stem(w) for w in d]
+        i['content'] = e
+        l.append(i)
     return l
 clr_list_string = list_str_clear()
-
+word_tokenize
 
 #Extracts only the political and reliable typings of articles. 
 #This is due to the fact that ['fake', 'unreliable', 'conspiracy', 'junksci', 'clickbait'] all contain inaccurate or unverifiable information, 
@@ -96,3 +108,5 @@ def type_check():
 print(type_check()) # {'fake': 224, 'reliable': 26} e.g. 89.6% fake.
 # A major issue with this is that, with the data so heavily skewed towards fake, it implies a bias in the data collection proccess.
 # Additionally, it may imply a 'lazy' detector; e.g. that the method for determing fake news is not very refined.
+def main():
+    return
