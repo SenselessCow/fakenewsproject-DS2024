@@ -61,8 +61,8 @@ def list_str_clear(): #Extracts only the contents from each line in the csv, whi
     l = []
     for i in list_init:
         a = i['content']
-        b = a.datex(a)
-        b = clean(b, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
+        two = datex(a)
+        b = clean(two, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
                 fix_unicode=True,               # fix various unicode errors
                 to_ascii=True,                  # transliterate to closest ASCII representation
                 lower=True,                     # lowercase text
@@ -138,6 +138,9 @@ x = list_str()
 y = Counter(x)
 u = y["'url"]
 n = y["'number"]
+d = y["'date"]
+hundred = Counter(x).most_common(100)
+tenthousand = Counter(x).most_common(10000)
 print(x)
 #print(type_check()) # {'fake': 224, 'reliable': 26} e.g. 89.6% fake.
 # A major issue with this is that, with the data so heavily skewed towards fake, it implies a bias in the data collection proccess.
