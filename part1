@@ -1,14 +1,25 @@
 import nltk
+import re
 import csv
 import requests #The only module I know that can download.
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
 from cleantext import clean
+from collections import Counter
 nltk.download('punkt')
 nltk.download('stopwords')
 stop_words = set(stopwords.words('english'))
 ps = PorterStemmer()
+
+import datefinder
+import re
+
+def datex(text, token="<DATE>"):
+    matches = datefinder.find_dates(text)
+    for match in matches:
+        text = text.replace(str(match), token)
+    return text
 
 csv_url = 'https://raw.githubusercontent.com/several27/FakeNewsCorpus/master/news_sample.csv'
 
@@ -46,12 +57,12 @@ type_list = types() #['fake', '', 'unreliable', 'hate', 'political', 'conspiracy
 # As such, I'd rather mark it as fake or fact based on the information they express in the article, rather than the conclusions they draw from that information. 
 # It does seem to be overwhelmingly using accurate information, even if the conclusions they want the reader to draw may not be as unassailable.
 
-
 def list_str_clear(): #Extracts only the contents from each line in the csv, which does not contain one of the excluded types.
     l = []
     for i in list_init:
         a = i['content']
-        b = clean(a, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
+        b = a.datex(a)
+        b = clean(b, #I copied the clean command's bool-checks from https://pypi.org/project/clean-text/
                 fix_unicode=True,               # fix various unicode errors
                 to_ascii=True,                  # transliterate to closest ASCII representation
                 lower=True,                     # lowercase text
@@ -79,7 +90,6 @@ def list_str_clear(): #Extracts only the contents from each line in the csv, whi
         l.append(i)
     return l
 clr_list_string = list_str_clear()
-word_tokenize
 
 #Extracts only the political and reliable typings of articles. 
 #This is due to the fact that ['fake', 'unreliable', 'conspiracy', 'junksci', 'clickbait'] all contain inaccurate or unverifiable information, 
@@ -105,7 +115,31 @@ def type_check():
                 count[j] = 1
     return count
 
-print(type_check()) # {'fake': 224, 'reliable': 26} e.g. 89.6% fake.
+def list_str():
+    z = []
+    x = list_str_clear()
+    for i in x:
+        z = z + i["content"]
+    return z
+
+
+
+def word_counter(string_list):
+    count = {}
+    all_words = []
+    for string in string_list: #For every string in string_list, it finds every word and adds it to all_words
+        words = re.findall(r'\b\w+\b', string)
+        all_words = all_words + words
+    
+    for i in all_words: #For every word in all_words, it checks if its already in count. If it is, it increases the integer. If it isn't, it creates it with a value of 1.
+        count[i] = count.get(i, 0) + 1
+    return count
+x = list_str()
+y = Counter(x)
+u = y["'url"]
+n = y["'number"]
+print(x)
+#print(type_check()) # {'fake': 224, 'reliable': 26} e.g. 89.6% fake.
 # A major issue with this is that, with the data so heavily skewed towards fake, it implies a bias in the data collection proccess.
 # Additionally, it may imply a 'lazy' detector; e.g. that the method for determing fake news is not very refined.
 def main():
