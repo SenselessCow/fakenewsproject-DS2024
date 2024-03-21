@@ -6,10 +6,13 @@ raw_data = dataprocessing.get_data()
 cleaned_data = raw_data.copy()
 reliable_data = raw_data.copy()
 cleaned_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
+
+#Vi skal have et dataframe der kun indeholder "reliable" og "ureliable" for hver eneste artikel 
+
 # print(reliable_data)
 
-reliable_data = reliable_data.drop(reliable_data[~(reliable_data['type'] != 'reliable')])
-print(reliable_data)
+# reliable_data = reliable_data.drop(reliable_data[~(reliable_data['type'] != 'reliable')])
+# print(reliable_data)
 
 # i=0
 # while i <= (len(reliable_data.content)):
