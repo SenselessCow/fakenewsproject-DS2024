@@ -8,13 +8,15 @@ import datefinder
 import os
 import pandas as pd 
 from collections import Counter
-import re
 
-def get_data():
-    if os.path.isfile('news_sample.csv'):
-        raw_data = pd.read_csv('news_sample.csv', index_col = 0)
-    else:
-        raw_data = pd.read_csv("https://raw.githubusercontent.com/several27/FakeNewsCorpus/master/news_sample.csv", index_col = 0)
+def get_data(filename, url=None):
+    if os.path.isfile(filename):
+        raw_data = pd.read_csv(filename, index_col = 0)
+    if url is not None and not os.path.isfile(filename):
+        raw_data = pd.read_csv(url, index_col = 0)
+        raw_data.to_csv(filename)
+    if url is None:
+        print('Please provide a url or a filename')
     return raw_data
 
 def clean_data(x):
