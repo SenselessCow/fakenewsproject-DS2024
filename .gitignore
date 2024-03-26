@@ -5,6 +5,9 @@ __pycache__/
 
 # C extensions
 *.so
+# ignore env and csv
+fakenews
+995,000_rows.csv
 
 # Distribution / packaging
 .Python
