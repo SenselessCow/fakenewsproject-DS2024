@@ -6,7 +6,6 @@ from sklearn.metrics import mean_squared_error, accuracy_score
 import numpy as np
 import pandas as pd 
 
-
 # Function to map types to new groups
 def map_to_group(type_value):
     if type_value in ['fake', 'conspiracy']:
@@ -16,11 +15,36 @@ def map_to_group(type_value):
     else:
         return 'GroupOmitted'
 
-# Ville lave en funktion som kunne tilføje en boolean værdi til hver artikel der angiver om 
-# domainet har udgivet reliable informationer før. Lige nu overskriver boolean værdierne domain 
-# parameterne, men de burde faktisk bare lave en ny parameter for hvert row.
-# PROBLEM! ! ! ! ! Af en eller anden grund er det ikke muligt at iterate alle X's domains, og
-# derfor er jeg stuck. jeg har også prøvet at lave alt dette med pandas .apply, men jeg var for dum..  
+# Adds a boolean indicator to x and y -test to show wether the article is true or not. 
+def map_to_authenticity(grouptype):
+    if grouptype in ['GroupFake', 'GroupOmitted']:
+        return 0
+    elif grouptype == 'GroupReliable':
+        return 1
+    
+#If a single column only contains 2 different values, this will turn all entries of the most common one (most likely one to be a fake article)
+#into "1"'s and all the most uncommon ones into "0"'s yet to be tested on a dataset containing any true articles.
+def interpret_commons_as_bool(y_pred):
+    y_pred_uniques = np.unique(y_pred, return_counts=True)
+    if np.size(y_pred_uniques[0]) > 1:
+        if y_pred_uniques[1][0] > y_pred_uniques[1][1]:
+            for i in range (np.size(y_pred)):
+                if y_pred[i] == y_pred_uniques[0][0]:
+                    y_pred[i] = 0
+                else:
+                    y_pred[i] = 1
+        else:
+            for i in range (np.size(y_pred)):
+                if y_pred[i] == y_pred_uniques[0][0]:
+                    y_pred[i] = 1
+                else:
+                    y_pred[i] = 0
+    else:
+        for i in range (np.size(y_pred)):
+            y_pred[i] = 0
+    return y_pred
+
+#Vi sætter en boolean værdi til at indikere om artiklens hjemmeside har et "ry" for at lave true artikler. Dette gemmes i parameter kolennen "trusted"
 def domain_to_boolean(X,reliables):
     for j in range (len(X['domain'])):
         i=0
@@ -40,22 +64,15 @@ def domain_to_boolean(X,reliables):
         
     return X
 
-# def domain_to_boolean(domain,reliables):
-#     i=0
-#     while domain != (reliables[i]):
-#         i=i+1
-#         if i+1 == len(reliables):
-#             return 0
-#     return 1
-
-# Returns list containining one of each trusted domains from a given dataset
+# Returns list containining one of each trusted domains from a given dataset. Now its called on the entire corpus, but it should only
+#be run on our training data..
 def trusted_sites(a):
     b=[]
     for i in range (len(a['content'])):
         if a['GroupedType'][i] == 'GroupReliable':
             b.append(a['domain'][i])
     result = np.unique(b, return_counts=False)
-    print("reliable sites found = " + str(result))   
+    print("reliable domains found in cleaned data = " + str(result))   
     return result[0]
 
 raw_data = dataprocessing.get_data()
@@ -80,15 +97,11 @@ filtered_percentage = filtered_counts / filtered_counts.sum() * 100
 # Combine data into a single DataFrame for plotting
 comparison_df = pd.DataFrame({'AllGroups': all_groups_percentage, 'FakeVsReliable': filtered_percentage}).fillna(0)
 
-
 #IBLERS UPDATES - 
 X = clean_data
-# y = clean_data['GroupedType']
 
-#Split dataen op, den klassiske måde virkede ikke for det resulterede i at man kun kunne iterere columns men ikke rows i vores pandas dataframe..
-#Med denn måde at fordele det på bliver fordelingen lidt forskellig hver gang, men det virker. Vi skal fikse det tho
-# X_train, X_test, y_train, y_test = ms.train_test_split(X, y, test_size=0.2, random_state=0)
-
+#Jeg har strugglet rigtigt meget med at fordele dataen... Dette var en af mine implementationer, men dette ville resultere i at man var nødt 
+#til at croppe dataen så jeg valgte at abandon det, ville bare vise det så derfor har jeg beholdt det xD
 # msk = np.random.rand(len(X)) < 0.8
 # X_trainv = X[msk]
 # X_testv = X[~msk]
@@ -101,8 +114,10 @@ X = clean_data
 # del X_trainv
 # del X_testv
 
+#Vi laver en liste af indeks som tilsvarer mængden af indeks i vores corpus. Vi tager næst en fordeling af disse index til hver af vores dataset
+#Herefter smider vi dataen fra de tilhørende indeks ind i datasettene. Den normale måde fungerer åbenbart ikke på store 2d panda df's så 
+#vidt jeg forstår xd..
 indexlist = []
-# print(indexlist[0])
 for a in range (len(X)):
     indexlist.append(a) 
 vX_train, vX_test, vy_train, vy_test = ms.train_test_split(indexlist, indexlist, test_size=0.2, random_state=0)
@@ -119,28 +134,33 @@ X_test = X.iloc[vX_test].reset_index()
 y_test = X.iloc[vy_test].reset_index()
 # print(X_train)
 
-# X_train = X_train['domain']
-# y_train = y_train['GroupedType']
-y_test =y_test['GroupedType']
+#laver dem boolean
+X_test['trusted'] = X_test['GroupedType'].apply(map_to_authenticity)
+y_test['trusted'] = y_test['GroupedType'].apply(map_to_authenticity)
+
+# print(X_test)
 
 # X_test = X_test['domain'].apply(domain_to_boolean,args=(reliable_sites))
 X_train = domain_to_boolean(X_train, reliable_sites)
 y_train = domain_to_boolean(y_train, reliable_sites)
 # print(X_test)
 
+#Definer hvilke features vi faktisk skal bruge til modellen.
+test_col = ['trusted']
 feature_cols = ['trusted']
-# you want all rows, and the feature_cols' columns
 X_train = X_train.loc[:, feature_cols]
-print(X_train)
 y_train = y_train.loc[:, feature_cols]
-print(y_train)
+X_test = X_test.loc[:, test_col]
+y_test = y_test.loc[:, test_col]
 
-#Mange data skal behandles før dette vil virke:
 model = LinearRegression()
-# print(X_train)
-# print(y_train)
 reg = model.fit(X_train, y_train)     #MEGET LANGSOM LINJE
 y_pred = reg.predict(X_test)
+
+#Laver y_pred til binary ved at tælle hvilken værdi der er flest af, og så lave alle kopier af den værdi til 0 og den anden til 1
+y_pred = interpret_commons_as_bool(y_pred)
+# print(y_pred)
+
 mse = mean_squared_error(y_test, y_pred)
 acc = accuracy_score(y_test, y_pred)
  
