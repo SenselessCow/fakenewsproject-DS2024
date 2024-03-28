@@ -1,4 +1,5 @@
 import dataprocessing
+import models
 
 # Part 1
 print('Part 1')
@@ -18,6 +19,7 @@ reduction_rate = dataprocessing.compute_reduction_rate(orig_unique_word_count, u
 print('Unique words before text processing: {},'
       ' after text processing: {}'
        ' and the reduction rate is: {:.2f}%'.format(orig_unique_word_count, unique_word_count, reduction_rate))
+
 
 # Example of how to print the most common words
 # print(word_counts.most_common(10))
@@ -40,3 +42,5 @@ print('Unique words before text processing: {},'
 # print('Unique words before text processing: {},'
 #       ' after text processing: {}'
 #        ' and the reduction rate is: {:.2f}%'.format(orig_unique_word_count_plus, unique_word_count_plus, reduction_rate_plus))
+
+models.linear_model1(cleaned_data)
