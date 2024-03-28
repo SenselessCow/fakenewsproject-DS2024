@@ -15,7 +15,7 @@ def map_to_group(type_value):
     else:
         return 'GroupOmitted'
 
-# Adds a boolean indicator to x and y -test to show wether the article is true or not. 
+# Adds a boolean indicator to x and y -test to show wether the article is true or not.
 def map_to_authenticity(grouptype):
     if grouptype in ['GroupFake', 'GroupOmitted']:
         return 0
@@ -75,7 +75,7 @@ def trusted_sites(a):
     print("reliable domains found in cleaned data = " + str(result))   
     return result[0]
 
-raw_data = dataprocessing.get_data()
+raw_data = dataprocessing.get_data("news_sample.csv")
 clean_data = raw_data.copy()
 clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
 
