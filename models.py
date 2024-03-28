@@ -71,18 +71,13 @@ def trusted_sites(a):
     for i in range (len(a['content'])):
         if a['GroupedType'][i] == 'GroupReliable':
             b.append(a['domain'][i])
+            # print(a.loc[i])  See feature data of trusted articles
     result = np.unique(b, return_counts=False)
     print("reliable domains found in cleaned data = " + str(result))   
     return result[0]
 
-def linear_model1(clean_data):
-    # Apply the function to create a new 'GroupedType' column
-    clean_data['GroupedType'] = clean_data['type'].apply(map_to_group)
-
-    # Make a list with all unique trusted websites                      #Ibler update
-    reliable_sites = trusted_sites(clean_data)
-
-    # All groups percentage
+def data_stats(clean_data):
+     # All groups percentage
     all_groups_counts = clean_data['GroupedType'].value_counts()
     all_groups_percentage = all_groups_counts / all_groups_counts.sum() * 100
 
@@ -92,48 +87,40 @@ def linear_model1(clean_data):
 
     # Combine data into a single DataFrame for plotting
     comparison_df = pd.DataFrame({'AllGroups': all_groups_percentage, 'FakeVsReliable': filtered_percentage}).fillna(0)
+    print(comparison_df)
+    return
 
-    #IBLERS UPDATES - 
-    X = clean_data
+def linear_model1(clean_data):
 
-    #Jeg har strugglet rigtigt meget med at fordele dataen... Dette var en af mine implementationer, men dette ville resultere i at man var nødt 
-    #til at croppe dataen så jeg valgte at abandon det, ville bare vise det så derfor har jeg beholdt det xD
-    # msk = np.random.rand(len(X)) < 0.8
-    # X_trainv = X[msk]
-    # X_testv = X[~msk]
-    # msk = np.random.rand(len(X_trainv)) < 0.5
-    # X_train = X_trainv[msk].reset_index()
-    # y_train = X_trainv[~msk].reset_index()
-    # msk = np.random.rand(len(X_testv)) < 0.5
-    # X_test = X_testv[msk].reset_index()
-    # y_test = X_testv[~msk].reset_index()
-    # del X_trainv
-    # del X_testv
+    # Optional line makes it so we can see all columns every time we print a dataframe
+    # pd.set_option('display.max_columns', None)
+
+    # Apply the function to create a new 'GroupedType' column
+    clean_data['GroupedType'] = clean_data['type'].apply(map_to_group)
+
+    # Make a list with all unique trusted websites                      #Ibler update
+    reliable_sites = trusted_sites(clean_data)
+
+    # Stats on distribution of reliable fake and omitted articles
+    data_stats(clean_data)
 
     #Vi laver en liste af indeks som tilsvarer mængden af indeks i vores corpus. Vi tager næst en fordeling af disse index til hver af vores dataset
     #Herefter smider vi dataen fra de tilhørende indeks ind i datasettene. Den normale måde fungerer åbenbart ikke på store 2d panda df's så 
     #vidt jeg forstår xd..
     indexlist = []
-    for a in range (len(X)):
+    for a in range (len(clean_data)):
         indexlist.append(a) 
     vX_train, vX_test, vy_train, vy_test = ms.train_test_split(indexlist, indexlist, test_size=0.2, random_state=0)
-    # print(vX_train)
-    # print(len(X))
-    # print(len(vX_train))
-    # print(len(vy_train))
-    # print(len(vX_test))
-    # print(len(vy_test))
-    # print(X.iloc[3])
-    X_train = X.iloc[vX_train].reset_index()
-    y_train = X.iloc[vy_train].reset_index()
-    X_test = X.iloc[vX_test].reset_index()
-    y_test = X.iloc[vy_test].reset_index()
+    X_train = clean_data.iloc[vX_train].reset_index()
+    y_train = clean_data.iloc[vy_train].reset_index()
+    X_test = clean_data.iloc[vX_test].reset_index()
+    y_test = clean_data.iloc[vy_test].reset_index()
+    # pd.set_option('display.max_columns', None)
     # print(X_train)
 
-    #laver dem boolean
+    # Laver dem boolean
     X_test['trusted'] = X_test['GroupedType'].apply(map_to_authenticity)
     y_test['trusted'] = y_test['GroupedType'].apply(map_to_authenticity)
-
     # print(X_test)
 
     # X_test = X_test['domain'].apply(domain_to_boolean,args=(reliable_sites))
@@ -141,7 +128,7 @@ def linear_model1(clean_data):
     y_train = domain_to_boolean(y_train, reliable_sites)
     # print(X_test)
 
-    #Definer hvilke features vi faktisk skal bruge til modellen.
+    # Definer hvilke features vi faktisk skal bruge til modellen.
     test_col = ['trusted']
     feature_cols = ['trusted']
     X_train = X_train.loc[:, feature_cols]
@@ -153,19 +140,18 @@ def linear_model1(clean_data):
     reg = model.fit(X_train, y_train)     #MEGET LANGSOM LINJE
     y_pred = reg.predict(X_test)
 
-    #Laver y_pred til binary ved at tælle hvilken værdi der er flest af, og så lave alle kopier af den værdi til 0 og den anden til 1
+    # Laver y_pred til binary ved at tælle hvilken værdi der er flest af, og så lave alle kopier af den værdi til 0 og den anden til 1
     y_pred = interpret_commons_as_bool(y_pred)
     # print(y_pred)
 
     mse = mean_squared_error(y_test, y_pred)
     acc = accuracy_score(y_test, y_pred)
     
-    # DO NOT INSERT OR CHANGE ANYTHING BELOW
     print("LinearRegression MSE: ", mse)
     print("LinearRegression accuracy: ", acc)
     return
 
-# raw_data = dataprocessing.get_data("news_sample.csv")
-# clean_data = raw_data.copy()
-# clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
-# linear_model1(clean_data)
+raw_data = dataprocessing.get_data("news_sample.csv")
+clean_data = raw_data.copy()
+clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
+linear_model1(clean_data)
