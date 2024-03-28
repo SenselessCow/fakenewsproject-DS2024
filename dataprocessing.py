@@ -7,12 +7,16 @@ from cleantext import clean
 import datefinder
 import os
 import pandas as pd 
+from collections import Counter
 
-def get_data():
-    if os.path.isfile('news_sample.csv'):
-        raw_data = pd.read_csv('news_sample.csv', index_col = 0)
-    else:
-        raw_data = pd.read_csv("https://raw.githubusercontent.com/several27/FakeNewsCorpus/master/news_sample.csv", index_col = 0)
+def get_data(filename, url=None):
+    if os.path.isfile(filename):
+        raw_data = pd.read_csv(filename, index_col = 0)
+    if url is not None and not os.path.isfile(filename):
+        raw_data = pd.read_csv(url, index_col = 0)
+        raw_data.to_csv(filename)
+    if url is None:
+        print('Please provide a url or a filename')
     return raw_data
 
 def clean_data(x):
@@ -52,7 +56,7 @@ def check_nltk_package(package_name):
         print(f"{package_name} is not installed. Downloading...")
         nltk.download(package_name)
 
-check_nltk_package('punkt')
+# check_nltk_package('punkt')
 check_nltk_package('stopwords')
 
 def tokenize(text):
@@ -64,6 +68,13 @@ def remove_stopwords(x):
     stop_words = set(stopwords.words('english'))
     return [w for w in x if not w.lower() in stop_words]
 
+# Remove . / , : ; etc
+def remove_punctuation(x):
+    # Replace punctuations with the empty string if you want a count of it
+    # return [re.sub(r'\W+', '', word) if len(word) == 1 else word for word in x]
+    # Remove puntuations if it is 1 char long and not alphanumeric
+    return [word for word in x if len(word) > 1 or word.isalnum()]
+
 def stem_data(x):
     ps = PorterStemmer()
     return [ps.stem(w) for w in x]
@@ -73,5 +84,23 @@ def text_preprocessing(x):
     x = replace_dates_with_token(x)
     x = tokenize(x)
     x = remove_stopwords(x)
+    x = remove_punctuation(x)
     x = stem_data(x)
     return x
+
+def count_words(df, column_name):
+    # Create a Counter object for word counts
+    word_counts = Counter()
+
+    # Update word counts for each row
+    for sublist in df[column_name]:
+        word_counts.update(sublist)
+
+    # Calculate total and unique word counts
+    total_word_count = sum(word_counts.values())
+    unique_word_count = len(word_counts)
+
+    return total_word_count, unique_word_count, word_counts
+
+def compute_reduction_rate(orig_unique_word_count, unique_word_count):
+    return ((orig_unique_word_count - unique_word_count) / orig_unique_word_count) * 100
