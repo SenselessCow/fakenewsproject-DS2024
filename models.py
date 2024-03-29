@@ -6,6 +6,9 @@ from sklearn.metrics import mean_squared_error, accuracy_score
 import numpy as np
 import pandas as pd 
 from sklearn.model_selection import train_test_split, GridSearchCV
+import re
+# from collections import Counter
+
 
 # Function to map types to new groups
 def map_to_group(type_value):
@@ -235,49 +238,60 @@ def logistic_model2(clean_data):
 def nyfunktion3(cleaned_data):
     cleaned_data['GroupedType'] = cleaned_data['type'].apply(map_to_group)
     cleaned_data['trusted'] = cleaned_data['GroupedType'].apply(map_to_authenticity)
-    dataA = pd.DataFrame()
-    dataB = pd.DataFrame()
+    true_df = pd.DataFrame()
+    fake_df = pd.DataFrame()
     for i in range(len(cleaned_data)):
-        if len(dataB) < 1:
+        if len(fake_df) < 1:
             if cleaned_data.iloc[i]['trusted'] == 1:
-                dataA = cleaned_data.iloc[[i]]
+                true_df = cleaned_data.iloc[[i]]
             else:
-                dataB = cleaned_data.iloc[[i]]
+                fake_df = cleaned_data.iloc[[i]]
         else:
             if cleaned_data.iloc[i]['trusted'] == 1:
-                dataA = dataA._append(cleaned_data.iloc[[i]], ignore_index=True)
+                true_df = true_df._append(cleaned_data.iloc[[i]], ignore_index=True)
             elif cleaned_data.iloc[i]['trusted'] == 0:
-                dataB = dataB._append(cleaned_data.iloc[[i]], ignore_index=True)
-    l_A = len(dataA)
-    l_B = len(dataB)
-    # print("l_A: ",l_A," l_B: ",l_B," datA: ",dataA," datB: ",dataB)
-    f, g, true_words = dataprocessing.count_words(dataA, 'content')
-    h, j, false_words = dataprocessing.count_words(dataB, 'content')
-    max_true = true_words.most_common(25)
-    max_false = false_words.most_common(25)
+                fake_df = fake_df._append(cleaned_data.iloc[[i]], ignore_index=True)
+    l_A = len(true_df)
+    l_B = len(fake_df)
+    # print("l_A: ",l_A," l_B: ",l_B," datA: ",dataA," datB: ",fake_df)
+    f, g, true_words = dataprocessing.count_words(true_df, 'content')
+    h, j, false_words = dataprocessing.count_words(fake_df, 'content')
+    wa = 25  #Common word amount
+    max_true = true_words.most_common(wa)
+    max_false = false_words.most_common(wa)
     list_avg_A = []
     list_avg_B = []
-    print("max_true= ",max_true,"\nmax_false= ",max_false)
-    for i in range(25):
-        i
-        # print(max_true[i][1])
-        # print(max_false[i][1])
+    # print("max_true= ",max_true,"\nmax_false= ",max_false)
+    
+    #Bare et forslag til hvad man kunne gøre, jeg tror det kan gøres meget smartere og bedre sikkert:
+    true_deviance_range_lst = []  # liste af lister hvor [[ord,min,max][ord,min,max]...] hvor vi specificere en range som et ord kan være i for at være true
+    fake_deviance_range_lst = []                                                                                                                 #eller fake
+    for i in range(wa):
+        # print(max_true[i][0])
+        for j in range(wa):
+            if max_true[i][0] == max_false[j][0]:
+                avrg_tru_word_pr_art = max_true[i][1]/l_A
+                avrg_false_word_pr_art = max_false[j][1]/l_B
+                mean = (avrg_tru_word_pr_art+avrg_false_word_pr_art)/2
+                difference = abs(avrg_tru_word_pr_art-mean)
+                true_deviance_range_lst.append([max_true[i][0],avrg_tru_word_pr_art-difference,avrg_tru_word_pr_art+difference])
+    print("true word deviance list:",true_deviance_range_lst,"\n")
+    for i in range(wa):
+        for j in range(wa):
+            if max_false[i][0] == max_true[j][0]:
+                avrg_false_word_pr_art = max_false[i][1]/l_B
+                avrg_tru_word_pr_art = max_true[j][1]/l_A
+                mean = (avrg_false_word_pr_art+avrg_tru_word_pr_art)/2
+                difference = abs(avrg_false_word_pr_art-mean)
+                fake_deviance_range_lst.append([max_false[i][0],avrg_false_word_pr_art-difference,avrg_false_word_pr_art+difference])
+    print("fake word deviance list:",fake_deviance_range_lst,"\n")
+    
+    for i in range(len(true_deviance_range_lst)):
+        print("For an article to be true it must contain at least",true_deviance_range_lst[i][1]," instances of  the word ", true_deviance_range_lst[i][0]," and at most ",true_deviance_range_lst[i][2]," instances.\n")
+    # print(max_true[i][0]," ",max_true[i][1]/len(true_df['trusted']),"true")      print alle de true og fake ord og deres avrg per artikel
+    # print(max_false[i][0]," ",max_false[i][1]/len(fake_df['trusted']),"fake")
     return
 
-def iblersfunktion(cleaned_data):
-    cleaned_data['GroupedType'] = cleaned_data['type'].apply(map_to_group)
-    cleaned_data['trusted'] = cleaned_data['GroupedType'].apply(map_to_authenticity)
-    true_df = cleaned_data.copy()
-    false_df = cleaned_data.copy()
-    for i in len(cleaned_data):
-        if cleaned_data.iloc[i, "trusted"] == 1:
-            true_df.iloc[i].reset_index()
-            false_df.iloc[i].drop
-        else:
-            false_df.iloc[i].reset_index()
-            true_df.iloc[i].drop
-    print(true_df)
-    return
 # Include to run models without main.py
 raw_data = dataprocessing.get_data("news_sample.csv")
 clean_data = raw_data.copy()
