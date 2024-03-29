@@ -5,6 +5,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, accuracy_score
 import numpy as np
 import pandas as pd 
+from sklearn.model_selection import train_test_split, GridSearchCV
 
 # Function to map types to new groups
 def map_to_group(type_value):
@@ -14,6 +15,9 @@ def map_to_group(type_value):
         return 'GroupReliable'
     else:
         return 'GroupOmitted'
+
+def make_list_of_sus_words():
+    return
 
 #Lav en funktion som kan noget i den her stil   ---> Vi kunne bruge dette til en lidt bedre model
 def article_contains_words(df,list_of_sus_words):
@@ -26,9 +30,9 @@ def article_contains_words(df,list_of_sus_words):
 # Adds a boolean indicator to x and y -test to show wether the article is true or not.
 def map_to_authenticity(grouptype):
     if grouptype in ['GroupFake', 'GroupOmitted']:
-        return 0
+        return False
     elif grouptype == 'GroupReliable':
-        return 1
+        return True
     
 #If a single column only contains 2 different values, this will turn all entries of the most common one (most likely one to be a fake article)
 #into "1"'s and all the most uncommon ones into "0"'s yet to be tested on a dataset containing any true articles.
@@ -69,7 +73,6 @@ def domain_to_boolean(X,reliables):
                     X.loc[j, "trusted"] = 0
             X.loc[j, "trusted"] = 1
             j=j+1
-        
     return X
 
 # Returns list containining one of each trusted domains from a given dataset. Now its called on the entire corpus, but it should only
@@ -209,8 +212,13 @@ def logistic_model2(clean_data):
     X_test = X_test.loc[:, test_col]
     y_test = y_test.loc[:, test_col]
 
-    model = LogisticRegression()
-    reg = model.fit(X_train, y_train)     #MEGET LANGSOM LINJE
+    params = {
+    'C': [0.01, 1, 100],
+    'max_iter': [100, 500, 1000],
+    'solver': ['lbfgs', 'liblinear', 'newton-cg', 'newton-cholesky', 'sag', 'saga']
+    }
+    grid = GridSearchCV(LogisticRegression(), params, scoring='accuracy')
+    reg = grid.fit(X_train, y_train)
     y_pred = reg.predict(X_test)
 
     # Laver y_pred til binary ved at tælle hvilken værdi der er flest af, og så lave alle kopier af den værdi til 0 og den anden til 1
@@ -224,9 +232,48 @@ def logistic_model2(clean_data):
     print("LinearRegression accuracy: ", acc,"\n")
     return
 
+def nyfunktion3(cleaned_data):
+    cleaned_data['GroupedType'] = cleaned_data['type'].apply(map_to_group)
+    cleaned_data['trusted'] = cleaned_data['GroupedType'].apply(map_to_authenticity)
+    dataA = pd.DataFrame()
+    dataB = pd.DataFrame()
+    for i in range(len(cleaned_data)):
+        if cleaned_data.iloc[i]['trusted'] == 1:
+            dataA._append(cleaned_data.iloc[[i]])
+        else:
+            dataB._append(cleaned_data.iloc[[i]])
+    l_A = len(dataA)
+    l_B = len(dataB)
+    f, g, true_words = dataprocessing.count_words(dataA, 'content')
+    h, j, false_words = dataprocessing.count_words(dataB, 'content')
+    max_true = true_words.most_common(25)
+    max_false = false_words.most_common(25)
+    list_avg_A = []
+    list_avg_B = []
+    for i in range(25):
+        print(max_true[i][1])
+        print(max_false[i][1])
+    return
+
+def iblersfunktion(cleaned_data):
+    cleaned_data['GroupedType'] = cleaned_data['type'].apply(map_to_group)
+    cleaned_data['trusted'] = cleaned_data['GroupedType'].apply(map_to_authenticity)
+    true_df = cleaned_data.copy()
+    false_df = cleaned_data.copy()
+    for i in len(cleaned_data):
+        if cleaned_data.iloc[i, "trusted"] == 1:
+            true_df.iloc[i].reset_index()
+            false_df.iloc[i].drop
+        else:
+            false_df.iloc[i].reset_index()
+            true_df.iloc[i].drop
+    print(true_df)
+    return
 # Include to run models without main.py
-# raw_data = dataprocessing.get_data("news_sample.csv")
-# clean_data = raw_data.copy()
-# clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
+raw_data = dataprocessing.get_data("news_sample.csv")
+clean_data = raw_data.copy()
+clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
 # linear_model1(clean_data)
-# logistic_model2(clean_data)
+# # logistic_model2(clean_data)
+nyfunktion3(clean_data)
+# iblersfunktion(clean_data)

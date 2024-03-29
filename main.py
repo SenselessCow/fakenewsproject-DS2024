@@ -22,7 +22,7 @@ print('Unique words before text processing: {},'
 
 
 # Example of how to print the most common words
-# print(word_counts.most_common(10))
+print(word_counts.most_common(10))
 
 # # Part 2
 print('\nPart 2')
@@ -48,3 +48,4 @@ models.linear_model1(cleaned_data)
 # models.linear_model1(cleaned_data_plus)
 models.logistic_model2(cleaned_data)
 # models.logistic_model2(cleaned_data_plus)
+models.nyfunktion3(cleaned_data)
