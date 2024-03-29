@@ -15,6 +15,14 @@ def map_to_group(type_value):
     else:
         return 'GroupOmitted'
 
+#Lav en funktion som kan noget i den her stil   ---> Vi kunne bruge dette til en lidt bedre model
+def article_contains_words(df,list_of_sus_words):
+    # for word in list_of_sus_words:
+        # for j in range (len(df))
+            #if df["content"] contains list_of_sus_words
+                #mark article as sus AKA boolean 0
+    return
+
 # Adds a boolean indicator to x and y -test to show wether the article is true or not.
 def map_to_authenticity(grouptype):
     if grouptype in ['GroupFake', 'GroupOmitted']:
