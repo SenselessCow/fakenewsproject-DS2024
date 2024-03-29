@@ -25,7 +25,7 @@ print('Unique words before text processing: {},'
 # print(word_counts.most_common(10))
 
 # # Part 2
-# print('Part 2')
+print('\nPart 2')
 # filename = "995,000_rows.csv"
 # # Get raw data and copies for processing
 # raw_data_plus = dataprocessing.get_data(filename)
@@ -43,5 +43,8 @@ print('Unique words before text processing: {},'
 #       ' after text processing: {}'
 #        ' and the reduction rate is: {:.2f}%'.format(orig_unique_word_count_plus, unique_word_count_plus, reduction_rate_plus))
 
+print("Fakenews modelling and predictions:\n")
 models.linear_model1(cleaned_data)
 # models.linear_model1(cleaned_data_plus)
+models.logistic_model2(cleaned_data)
+# models.logistic_model2(cleaned_data_plus)

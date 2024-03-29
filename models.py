@@ -90,8 +90,11 @@ def data_stats(clean_data):
     print(comparison_df)
     return
 
+# If it in training finds a website that has made a credible article before, it will mark every article in the test set made by the website 
+# as credible 
 def linear_model1(clean_data):
-
+    print("linear_model1 run:")
+    
     # Optional line makes it so we can see all columns every time we print a dataframe
     # pd.set_option('display.max_columns', None)
 
@@ -148,10 +151,74 @@ def linear_model1(clean_data):
     acc = accuracy_score(y_test, y_pred)
     
     print("LinearRegression MSE: ", mse)
-    print("LinearRegression accuracy: ", acc)
+    print("LinearRegression accuracy: ", acc,"\n")
     return
 
-raw_data = dataprocessing.get_data("news_sample.csv")
-clean_data = raw_data.copy()
-clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
-linear_model1(clean_data)
+# 1:1 Kopi af linear_model_1 bare logistisk 
+def logistic_model2(clean_data):
+    print("logistic_model2 run:")
+    # Optional line makes it so we can see all columns every time we print a dataframe
+    # pd.set_option('display.max_columns', None)
+
+    # Apply the function to create a new 'GroupedType' column
+    clean_data['GroupedType'] = clean_data['type'].apply(map_to_group)
+
+    # Make a list with all unique trusted websites                      #Ibler update
+    reliable_sites = trusted_sites(clean_data)
+
+    # Stats on distribution of reliable fake and omitted articles
+    data_stats(clean_data)
+
+    #Vi laver en liste af indeks som tilsvarer mængden af indeks i vores corpus. Vi tager næst en fordeling af disse index til hver af vores dataset
+    #Herefter smider vi dataen fra de tilhørende indeks ind i datasettene. Den normale måde fungerer åbenbart ikke på store 2d panda df's så 
+    #vidt jeg forstår xd..
+    indexlist = []
+    for a in range (len(clean_data)):
+        indexlist.append(a) 
+    vX_train, vX_test, vy_train, vy_test = ms.train_test_split(indexlist, indexlist, test_size=0.2, random_state=0)
+    X_train = clean_data.iloc[vX_train].reset_index()
+    y_train = clean_data.iloc[vy_train].reset_index()
+    X_test = clean_data.iloc[vX_test].reset_index()
+    y_test = clean_data.iloc[vy_test].reset_index()
+    # pd.set_option('display.max_columns', None)
+    # print(X_train)
+
+    # Laver dem boolean
+    X_test['trusted'] = X_test['GroupedType'].apply(map_to_authenticity)
+    y_test['trusted'] = y_test['GroupedType'].apply(map_to_authenticity)
+    # print(X_test)
+
+    # X_test = X_test['domain'].apply(domain_to_boolean,args=(reliable_sites))
+    X_train = domain_to_boolean(X_train, reliable_sites)
+    y_train = domain_to_boolean(y_train, reliable_sites)
+    # print(X_test)
+
+    # Definer hvilke features vi faktisk skal bruge til modellen.
+    test_col = ['trusted']
+    feature_cols = ['trusted']
+    X_train = X_train.loc[:, feature_cols]
+    y_train = y_train.loc[:, feature_cols]
+    X_test = X_test.loc[:, test_col]
+    y_test = y_test.loc[:, test_col]
+
+    model = LogisticRegression()
+    reg = model.fit(X_train, y_train)     #MEGET LANGSOM LINJE
+    y_pred = reg.predict(X_test)
+
+    # Laver y_pred til binary ved at tælle hvilken værdi der er flest af, og så lave alle kopier af den værdi til 0 og den anden til 1
+    y_pred = interpret_commons_as_bool(y_pred)
+    # print(y_pred)
+
+    mse = mean_squared_error(y_test, y_pred)
+    acc = accuracy_score(y_test, y_pred)
+    
+    print("LinearRegression MSE: ", mse)
+    print("LinearRegression accuracy: ", acc,"\n")
+    return
+
+# Include to run models without main.py
+# raw_data = dataprocessing.get_data("news_sample.csv")
+# clean_data = raw_data.copy()
+# clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
+# linear_model1(clean_data)
+# logistic_model2(clean_data)
