@@ -30,9 +30,9 @@ def article_contains_words(df,list_of_sus_words):
 # Adds a boolean indicator to x and y -test to show wether the article is true or not.
 def map_to_authenticity(grouptype):
     if grouptype in ['GroupFake', 'GroupOmitted']:
-        return False
+        return 0
     elif grouptype == 'GroupReliable':
-        return True
+        return 1
     
 #If a single column only contains 2 different values, this will turn all entries of the most common one (most likely one to be a fake article)
 #into "1"'s and all the most uncommon ones into "0"'s yet to be tested on a dataset containing any true articles.
@@ -238,21 +238,30 @@ def nyfunktion3(cleaned_data):
     dataA = pd.DataFrame()
     dataB = pd.DataFrame()
     for i in range(len(cleaned_data)):
-        if cleaned_data.iloc[i]['trusted'] == 1:
-            dataA._append(cleaned_data.iloc[[i]])
+        if len(dataB) < 1:
+            if cleaned_data.iloc[i]['trusted'] == 1:
+                dataA = cleaned_data.iloc[[i]]
+            else:
+                dataB = cleaned_data.iloc[[i]]
         else:
-            dataB._append(cleaned_data.iloc[[i]])
+            if cleaned_data.iloc[i]['trusted'] == 1:
+                dataA = dataA._append(cleaned_data.iloc[[i]], ignore_index=True)
+            elif cleaned_data.iloc[i]['trusted'] == 0:
+                dataB = dataB._append(cleaned_data.iloc[[i]], ignore_index=True)
     l_A = len(dataA)
     l_B = len(dataB)
+    # print("l_A: ",l_A," l_B: ",l_B," datA: ",dataA," datB: ",dataB)
     f, g, true_words = dataprocessing.count_words(dataA, 'content')
     h, j, false_words = dataprocessing.count_words(dataB, 'content')
     max_true = true_words.most_common(25)
     max_false = false_words.most_common(25)
     list_avg_A = []
     list_avg_B = []
+    print("max_true= ",max_true,"\nmax_false= ",max_false)
     for i in range(25):
-        print(max_true[i][1])
-        print(max_false[i][1])
+        i
+        # print(max_true[i][1])
+        # print(max_false[i][1])
     return
 
 def iblersfunktion(cleaned_data):
@@ -274,6 +283,6 @@ raw_data = dataprocessing.get_data("news_sample.csv")
 clean_data = raw_data.copy()
 clean_data['content'] = raw_data['content'].apply(dataprocessing.text_preprocessing)
 # linear_model1(clean_data)
-# # logistic_model2(clean_data)
+# logistic_model2(clean_data)
 nyfunktion3(clean_data)
 # iblersfunktion(clean_data)
