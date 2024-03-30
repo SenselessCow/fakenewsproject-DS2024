@@ -19,9 +19,6 @@ def map_to_group(type_value):
     else:
         return 'GroupOmitted'
 
-def make_list_of_sus_words():
-    return
-
 #Lav en funktion som kan noget i den her stil   ---> Vi kunne bruge dette til en lidt bedre model
 def article_contains_words(df,list_of_sus_words):
     # for word in list_of_sus_words:
@@ -235,6 +232,7 @@ def logistic_model2(clean_data):
     print("LinearRegression accuracy: ", acc,"\n")
     return
 
+#Tager pandas df og finder ud af hvilke ord i hvilken mængde kan være med til at afgøre om en artikel er fake eller reliable 
 def nyfunktion3(cleaned_data):
     cleaned_data['GroupedType'] = cleaned_data['type'].apply(map_to_group)
     cleaned_data['trusted'] = cleaned_data['GroupedType'].apply(map_to_authenticity)
