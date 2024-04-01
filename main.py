@@ -1,5 +1,6 @@
 import dataprocessing
 import models
+import advancedModel
 
 # Part 1
 print('Part 1')
@@ -48,4 +49,4 @@ models.linear_model1(cleaned_data)
 # models.linear_model1(cleaned_data_plus)
 models.logistic_model2(cleaned_data)
 # models.logistic_model2(cleaned_data_plus)
-models.nyfunktion3(cleaned_data)
+advancedModel.simpleModel1(cleaned_data)
