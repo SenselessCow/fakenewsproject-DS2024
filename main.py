@@ -1,7 +1,7 @@
 import dataprocessing
 import models
 import advancedModel
-
+print("main.py: kører")
 # Part 1
 print('Part 1')
 url = "https://raw.githubusercontent.com/several27/FakeNewsCorpus/master/news_sample.csv"
@@ -45,8 +45,8 @@ print('\nPart 2')
 #        ' and the reduction rate is: {:.2f}%'.format(orig_unique_word_count_plus, unique_word_count_plus, reduction_rate_plus))
 
 print("Fakenews modelling and predictions:\n")
-models.linear_model1(cleaned_data)
+# models.linear_model1(cleaned_data)
 # models.linear_model1(cleaned_data_plus)
-models.logistic_model2(cleaned_data)
+models.simpleModel1(cleaned_data)
 # models.logistic_model2(cleaned_data_plus)
-advancedModel.simpleModel1(cleaned_data)
+# advancedModel.logistic_model2(cleaned_data)

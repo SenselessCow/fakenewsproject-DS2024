@@ -1,4 +1,6 @@
 
+print("advancedModel.py: kører")
+
 #Vi sætter en boolean værdi til at indikere om artiklens hjemmeside har et "ry" for at lave true artikler. Dette gemmes i parameter kolennen "trusted"
 def domain_to_boolean(X,reliables):
     for j in range (len(X['domain'])):

@@ -6,8 +6,11 @@ from sklearn.metrics import mean_squared_error, accuracy_score
 import numpy as np
 import pandas as pd 
 from sklearn.model_selection import train_test_split, GridSearchCV
+from sklearn.feature_extraction.text import CountVectorizer
 import re
 from collections import Counter
+print("models.py: kører")
+
 # from collections import Counter
 
 
@@ -192,7 +195,7 @@ def simpleModel1(cleaned_data):
     # print("true word deviance list:",true_deviance_range_lst,"\n")
     # print("fake word deviance list:",fake_deviance_range_lst,"\n")
     def funktion(X):
-            # print(X)
+            a = 0
             wa = 25  #Common word amount
             max_true = true_words.most_common(wa)
             max_false = false_words.most_common(wa)
@@ -233,46 +236,63 @@ def simpleModel1(cleaned_data):
                             fake_score = fake_score + 1
             real_score = real_score + len(n_true_list)
             fake_score = fake_score + len(n_fake_list)
-            print("real_score: ",real_score," fake_score: " ,fake_score)    
+            # print("real_score: ",real_score," fake_score: " ,fake_score)    
             if real_score > fake_score:
-                return 1 
-            else:
-                return 0
+                a = 1
+            return a
 
 
     #Train test split
     indexlist = []
     for a in range (len(cleaned_data)):
         indexlist.append(a) 
-    vX_train, vX_test, vy_train, vy_test = ms.train_test_split(indexlist, indexlist, test_size=0.2, random_state=0)
+    vX_train, vy_train, vX_test, vy_test = ms.train_test_split(indexlist, indexlist, test_size=0.2, random_state=0)
     X_train = cleaned_data.iloc[vX_train].reset_index()
     y_train = cleaned_data.iloc[vy_train].reset_index()
     X_test = cleaned_data.iloc[vX_test].reset_index()
     y_test = cleaned_data.iloc[vy_test].reset_index()
 
+    print("len of X_train", len(X_train))
+    print("len of X_test", len(X_test))
+    print("len of y_test", len(y_test))
+
+
     # Definerer i ['trusted'] om artiklen er fake(0) eller  reliable(1) med boolena 0 og 1
     X_test['trusted'] = X_test['GroupedType'].apply(map_to_authenticity)
-    y_test['trusted'] = y_test['GroupedType'].apply(map_to_authenticity)
+    # y_test['trusted'] = y_test['GroupedType'].apply(map_to_authenticity)
 
     #Find distance from wordsCount to true or false wordcounts and predict if its a true or false article
-    X_train['trusted'] = X_train['content'].apply(funktion)
-    y_train['trusted'] = y_train['content'].apply(funktion)
-    print(X_train)
-    print(y_train)
+
+    # print(X_train)
+    beta_array = X_train['content'].apply(lambda x: ' '.join(x))
+    X_array = CountVectorizer().fit_transform(beta_array)
+    
+    beta_test = X_test['content'].apply(lambda x: ' '.join(x))
+    test_array = CountVectorizer().fit_transform(beta_test)
+    t_test_array = test_array.toarray()
+    
+    # f_train = y_train['content'].apply(lambda x: ' '.join(x))
+    # fe_train = CountVectorizer().fit_transform(f_train)
+    
+    # y_test = y_test['content'].apply(lambda x: ' '.join(x))
+    # y_test = CountVectorizer().fit_transform(y_test)
+    
+    z_train = X_train['content'].apply(funktion)
+
+    # feture_cols = ['content']
+    # X_train = X_train.loc[:, feature_cols]
     
     # article_contains_words()
-    grid = LogisticRegression(max_iter=500)
-    reg = grid.fit(X_train, y_train)
-    print(grid.best_params_)
-    print(grid.best_score_)
-    y_pred = reg.predict(X_test)
+    grid = LogisticRegression(max_iter=1000)
+    reg = grid.fit(X_array, z_train)
+    y_pred = reg.predict(test_array)
 
     # Laver y_pred til binary ved at tælle hvilken værdi der er flest af, og så lave alle kopier af den værdi til 0 og den anden til 1
     y_pred = interpret_commons_as_bool(y_pred)
     # print(y_pred)
 
-    mse = mean_squared_error(y_test, y_pred)
-    acc = accuracy_score(y_test, y_pred)
+    mse = mean_squared_error(t_test_array, y_pred)
+    acc = accuracy_score(t_test_array, y_pred)
     
     print("LinearRegression MSE: ", mse)
     print("LinearRegression accuracy: ", acc,"\n")
