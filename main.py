@@ -1,6 +1,5 @@
 
 import runpy
-import pandas as pd
 
 # Run part 1
 runpy.run_path('part1.py')
