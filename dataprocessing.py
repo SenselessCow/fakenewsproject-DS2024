@@ -9,15 +9,10 @@ import os
 import pandas as pd 
 from collections import Counter
 
-def get_data(filename, url=None):
+def get_data(filename):
     if os.path.isfile(filename):
-        raw_data = pd.read_csv(filename, index_col = 0)
-    if url is not None and not os.path.isfile(filename):
-        raw_data = pd.read_csv(url, index_col = 0)
-        raw_data.to_csv(filename)
-    if url is None:
-        print('Please provide a url or a filename')
-    return raw_data
+        raw_data = pd.read_csv(filename, index_col = 0, low_memory=False) # dtype={0: str, 1: str}
+        return raw_data
 
 def clean_data(x):
     return clean(x,
@@ -101,6 +96,19 @@ def count_words(df, column_name):
     unique_word_count = len(word_counts)
 
     return total_word_count, unique_word_count, word_counts
+
+def count_words_extended(df, column_name, cur_word_counts):
+    # Create a Counter object for word counts
+    word_counts = cur_word_counts
+
+    # Update word counts for each row
+    for sublist in df[column_name]:
+        word_counts.update(sublist)
+
+    # Update the current word counts
+    cur_word_counts.update(word_counts)
+
+    return cur_word_counts
 
 def compute_reduction_rate(orig_unique_word_count, unique_word_count):
     return ((orig_unique_word_count - unique_word_count) / orig_unique_word_count) * 100
