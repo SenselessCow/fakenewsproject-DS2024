@@ -5,13 +5,13 @@ import pandas as pd
 filename = "995,000_rows.csv"
 chunksize = 10000
 total_chunks = 995000 // chunksize
-print(total_chunks)
+print('total number of chunks to run: {}'.format(total_chunks))
 i = 0
 # Get raw data and for processing
 for raw_data_chunk in pd.read_csv(filename, chunksize=chunksize, low_memory=False):
       # raw_data_chunk = dataprocessing.get_data(chunk)
       i+=1
-      print(i)
+      print('Processing chunk: {}'.format(i - 1))
       # Drop empty rows and fill in empty authors and meta_keywords with <none>
       raw_data_chunk = raw_data_chunk.dropna(subset=['id', 'type', 'domain', 'content', 'title'])
       raw_data_chunk = raw_data_chunk.drop(columns=['keywords', 'source', 'tags', 'meta_description', 'summary'])
