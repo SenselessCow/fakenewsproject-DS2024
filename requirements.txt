@@ -3,3 +3,4 @@ clean-text
 requests
 panda
 datefinder
+scikit-learn
