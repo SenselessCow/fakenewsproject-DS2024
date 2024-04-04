@@ -2,7 +2,7 @@ import dataprocessing
 import pandas as pd
 
 # Clean data and save to a csv
-filename = "995,000_rows.csv"
+filename = "data/995,000_rows.csv"
 chunksize = 10000
 total_chunks = 995000 // chunksize
 print('total number of chunks to run: {}'.format(total_chunks))

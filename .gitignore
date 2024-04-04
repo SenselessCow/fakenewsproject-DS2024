@@ -9,6 +9,7 @@ __pycache__/
 fakenews
 995,000_rows.csv
 995,000_cleaned_dataset.csv
+data
 
 # Distribution / packaging
 .Python

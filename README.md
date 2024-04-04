@@ -29,8 +29,11 @@ The script processes the data in chunks to accommodate for memory constraints. Y
 
 The script outputs a cleaned dataset in a file named `995,000_cleaned_dataset.csv`. This file contains two columns: `id` and `content`. The `content` column contains the cleaned text data.
 
+Later merge.py scrip was added which needs to be run after to merge type etc into the df aswell.
+
 To run the script, use the following command:
 
 ```bash
 python clean_dataset.py
+python merge.py
 ```

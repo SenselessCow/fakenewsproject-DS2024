@@ -1,14 +1,14 @@
-import dataprocessing
+import data_manipulation_scripts.dataprocessing as dataprocessing
 import sys
 
 # Explore the data
 print('Part 2')
-filename = "995,000_rows.csv"
+filename = "../data/995,000_rows.csv"
 # # Get raw data and copies for processing
 raw_data_plus = dataprocessing.get_data(filename)
 
 # Open a text file to write the output
-with open('explore_995000_before.txt', 'w') as f:
+with open('../data/explore_995000_before.txt', 'w') as f:
     # Redirect the output to the text file
     sys.stdout = f
 
@@ -35,7 +35,7 @@ raw_data_plus = raw_data_plus.dropna(subset=['id', 'type', 'domain', 'content', 
 raw_data_plus = raw_data_plus.drop(columns=['keywords', 'source', 'tags', 'meta_description', 'summary'])
 
 # Open a text file to write the output
-with open('explore_995000_after.txt', 'w') as f:
+with open('../data/explore_995000_after.txt', 'w') as f:
     # Redirect the output to the text file
     sys.stdout = f
 

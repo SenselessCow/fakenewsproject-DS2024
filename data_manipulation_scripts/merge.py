@@ -1,7 +1,7 @@
 import pandas as pd
 
 # Load the second dataset
-df2 = pd.read_csv('995,000_cleaned_dataset.csv', low_memory=False)
+df2 = pd.read_csv('../data/995,000_cleaned_dataset.csv', low_memory=False)
 
 # Define chunk size
 chunksize = 5000
@@ -13,7 +13,7 @@ print('total number of chunks to run: {}'.format(total_chunks))
 i = 0
 df2['id'] = df2['id'].astype('string')
 # Load the first dataset in chunks
-for chunk in pd.read_csv('995,000_rows.csv', chunksize=chunksize, low_memory=False):
+for chunk in pd.read_csv('data/995,000_rows.csv', chunksize=chunksize, low_memory=False):
     i+=1
     print('Processing chunk: {}'.format(i - 1))
     chunk = chunk.dropna(subset=['id', 'type', 'domain', 'content', 'title'])
@@ -29,4 +29,4 @@ for chunk in pd.read_csv('995,000_rows.csv', chunksize=chunksize, low_memory=Fal
 merged_df = pd.concat(dfs, ignore_index=True)
 
 # Save the merged dataframe to a csv file
-merged_df.to_csv('merged_dataset.csv', index=False)
+merged_df.to_csv('../data/merged_dataset.csv', index=False)
