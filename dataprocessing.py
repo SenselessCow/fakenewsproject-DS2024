@@ -21,9 +21,9 @@ def get_data(filename, url=None):
     return raw_data
 
 def extract_random_10k(filename):
-    ran_num = random.randint(1, 980)
-
-    skip_rows=range(1, 995000 - ran_num*1000)
+    ran_num = 995000 - random.randint(1, 900)*1000
+    print(ran_num)
+    skip_rows=range(1, ran_num)
 
     data_subset = pd.read_csv(filename, skiprows=skip_rows, nrows=10000)
 
