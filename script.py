@@ -130,4 +130,3 @@ def data_tests():
     print("Advanced model accuracy on random subset of 995k data:", sim_accuracy)
 
     print("Advanced model accuracy on random subset of 995k data:", adv_accuracy)
-data_tests()
