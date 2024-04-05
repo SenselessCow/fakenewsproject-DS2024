@@ -115,9 +115,9 @@ def data_tests():
 
     adv_liar_accuracy = evaluate_advanced_liar(liar_data)
 
-    print("Simple model accuracy on liar test data:", sim_liar_accuracy)
+    print("Simple model accuracy, f-score and confusion-matrix on liar test data:", sim_liar_accuracy)
 
-    print("Advanced model accuracy on liar test data:", adv_liar_accuracy)
+    print("Advanced model accuracy, f-score and confusion-matrix on liar test data:", adv_liar_accuracy)
 
     data_filename = "10k_merged_dataset.csv"
 
@@ -127,7 +127,7 @@ def data_tests():
 
     adv_accuracy = evaluate_advanced_merged(FakeNews_data)
 
-    print("Advanced model accuracy on random subset of 995k data:", sim_accuracy)
+    print("Simple model accuracy, f-score and confusion-matrix on random subset of 995k data:", sim_accuracy)
 
-    print("Advanced model accuracy on random subset of 995k data:", adv_accuracy)
+    print("Advanced model accuracy, f-score and confusion-matrix on random subset of 995k data:", adv_accuracy)
 data_tests()
