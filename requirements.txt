@@ -4,3 +4,4 @@ requests
 panda
 datefinder
 matplotlib
+wordcloud

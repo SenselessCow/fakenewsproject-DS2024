@@ -1,8 +1,8 @@
-import dataprocessing
+import data_manipulation_scripts.dataprocessing as dataprocessing
 
 # Part 1
 print('Part 1')
-filename = "news_sample.csv"
+filename = "data/news_sample.csv"
 raw_data = dataprocessing.get_data(filename)
 cleaned_data = raw_data.copy()
 
