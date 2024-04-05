@@ -37,3 +37,15 @@ To run the script, use the following command:
 python clean_dataset.py
 python merge.py
 ```
+
+## Model utilization
+
+To utilize the model, you need to run the 'script.py' script, which requires the 'merged_dataset.csv' is available.
+
+The script first extracts 10k random lines from the dataset for testing. Thus, results might not be entirely consistent, as a new dataset is created each time.
+
+To run it, simply run the script.py, like so:
+
+```bash
+python script.py
+```
