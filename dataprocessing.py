@@ -21,7 +21,7 @@ def get_data(filename, url=None):
     return raw_data
 
 def extract_random_10k(filename):
-    ran_num = 995000 - random.randint(1, 900)*1000
+    ran_num = 200000 - random.randint(1, 100)*1000
     print(ran_num)
     skip_rows=range(1, ran_num)
 
