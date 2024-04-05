@@ -5,3 +5,4 @@ panda
 datefinder
 matplotlib
 wordcloud
+scikit-learn
